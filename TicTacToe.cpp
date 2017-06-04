@@ -6,6 +6,16 @@
 #include <string.h>
 #include <stdio.h>
 
+#define PI 3.141592 //PI를 3.141592로 정의해둠
+
+int stage = 1;		// 시작화면(1), 게임화면(2), 종료화면(3)으로 나눔, 첫 화면은 시작화면이므로 1로 초기화
+
+bool finish1 = false; //player1말 선택이 끝났는가를 알리는 변수  
+bool finish2 = false; //player2의 말 선택이 끝났는가를 알리는 변수  
+int kind1 = 3; //player1의 말을 나타내는 변수  
+int kind2 = 4; //player2의 말을 나타내는 변수 
+const GLfloat size = 2.0;
+
 int bigboard[3][3];
 char player1 = 0;
 char player2 = 0;
@@ -16,6 +26,224 @@ int turn;			// 현재 player의 턴을 나타냄.
 int result;			// 게임 결과
 bool over;			// 게임 종료 여부
 
+
+
+					/*
+					START 버튼
+					*/
+void StartButton()
+{
+	glColor3f(1, 1, 1);
+	glLineWidth(10);
+	//S 나타내기
+	glBegin(GL_LINES);
+	glVertex2f(15 * 1.5, 20 * 1.5);
+	glVertex2f(60 * 1.5, 20 * 1.5);
+
+	glVertex2f(15 * 1.5, 20 * 1.5);
+	glVertex2f(15 * 1.5, 90 * 1.5);
+
+	glVertex2f(15 * 1.5, 90 * 1.5);
+	glVertex2f(60 * 1.5, 90 * 1.5);
+
+	glVertex2f(60 * 1.5, 90 * 1.5);
+	glVertex2f(60 * 1.5, 160 * 1.5);
+
+	glVertex2f(60 * 1.5, 160 * 1.5);
+	glVertex2f(15 * 1.5, 160 * 1.5);
+	glEnd();
+	//T 나타내기
+	glBegin(GL_LINES);
+	glVertex2f(70 * 1.5, 20 * 1.5);
+	glVertex2f(120 * 1.5, 20 * 1.5);
+
+	glVertex2f(95 * 1.5, 20 * 1.5);
+	glVertex2f(95 * 1.5, 160 * 1.5);
+	glEnd();
+	//A 나타내기
+	glBegin(GL_LINES);
+	glVertex2f(130 * 1.5, 20 * 1.5);
+	glVertex2f(130 * 1.5, 160 * 1.5);
+
+	glVertex2f(130 * 1.5, 20 * 1.5);
+	glVertex2f(175 * 1.5, 20 * 1.5);
+
+	glVertex2f(175 * 1.5, 20 * 1.5);
+	glVertex2f(175 * 1.5, 160 * 1.5);
+
+	glVertex2f(130 * 1.5, 90 * 1.5);
+	glVertex2f(175 * 1.5, 90 * 1.5);
+	glEnd();
+	//R 나타내기
+	glBegin(GL_LINES);
+	glVertex2f(185 * 1.5, 20 * 1.5);
+	glVertex2f(185 * 1.5, 160 * 1.5);
+
+	glVertex2f(185 * 1.5, 20 * 1.5);
+	glVertex2f(230 * 1.5, 20 * 1.5);
+
+	glVertex2f(185 * 1.5, 90 * 1.5);
+	glVertex2f(230 * 1.5, 90 * 1.5);
+
+	glVertex2f(230 * 1.5, 20 * 1.5);
+	glVertex2f(230 * 1.5, 90 * 1.5);
+
+	glVertex2f(185 * 1.5, 90 * 1.5);
+	glVertex2f(230 * 1.5, 160 * 1.5);
+	glEnd();
+	//T 나타내기
+	glBegin(GL_LINES);
+	glVertex2f(240 * 1.5, 20 * 1.5);
+	glVertex2f(290 * 1.5, 20 * 1.5);
+
+	glVertex2f(265 * 1.5, 20 * 1.5);
+	glVertex2f(265 * 1.5, 160 * 1.5);
+	glEnd();
+}
+
+/*
+말선택 메뉴 부분 자리
+*/
+void DrawCross(float cx, float cy)
+{
+	glBegin(GL_LINES);
+	glVertex2f(cx - 12, cy - 12);
+	glVertex2f(cx + 12, cy + 12);
+	glVertex2f(cx - 12, cy + 12);
+	glVertex2f(cx + 12, cy - 12);
+	glEnd();
+}
+
+void DrawCircle(float cx, float cy, float r, int num_segments)//동그라미 그리기
+{
+	glBegin(GL_LINE_LOOP);
+	for (int i = 0; i < num_segments; i++)//원점을 중심으로 num_segments의 수만큼 원의 테두리에 점을 찍어 선으로 연결한다.
+	{
+		float theta = 2.0f * 3.1415926f * float(i) / float(num_segments);//get the current angle 
+		float x = r * cosf(theta);//calculate the x component 
+		float y = r * sinf(theta);//calculate the y component 
+		glVertex2f(x + cx, y + cy);//output vertex 
+	}
+	glEnd();
+}
+
+void Select(int x, int y, int r)
+{
+	glBegin(GL_LINES);
+	glColor3f(0.5*1.5, 0.7*1.5, 0.4*1.5);
+	//사각형 만들기
+	glVertex2f(10 * 1.5, 340 * 1.5);
+	glVertex2f(10 * 1.5, 190 * 1.5);
+
+	glVertex2f(10 * 1.5, 190 * 1.5);
+	glVertex2f(140 * 1.5, 190 * 1.5);
+
+	glVertex2f(140 * 1.5, 190 * 1.5);
+	glVertex2f(140 * 1.5, 340 * 1.5);
+
+	glVertex2f(140 * 1.5, 340 * 1.5);
+	glVertex2f(10 * 1.5, 340 * 1.5);
+
+	glVertex2f(10 * 1.5, 340 * 1.5);
+	glVertex2f(140 * 1.5, 190 * 1.5);
+	glEnd();
+	DrawCircle(45 * 1.5, 240 * 1.5, 25 * 1.5, 15 * 1.5);
+	DrawCross(105 * 1.5, 300 * 1.5);
+}
+
+/*
+규칙설명 메뉴 부분 자리
+*/
+void Rule(int x, int y)
+{
+	glBegin(GL_LINES);
+	glColor3f(0.5, 0.7, 0.4);
+	//사각형 만들기
+	glVertex2f(160 * 1.5, 340 * 1.5);
+	glVertex2f(160 * 1.5, 190 * 1.5);
+
+	glVertex2f(160 * 1.5, 190 * 1.5);
+	glVertex2f(290 * 1.5, 190 * 1.5);
+
+	glVertex2f(290 * 1.5, 190 * 1.5);
+	glVertex2f(290 * 1.5, 340 * 1.5);
+
+	glVertex2f(290 * 1.5, 340 * 1.5);
+	glVertex2f(160 * 1.5, 340 * 1.5);
+
+	//R 나타내기
+	glVertex2f(170 * 1.5, 245 * 1.5);
+	glVertex2f(190 * 1.5, 245 * 1.5);
+
+	glVertex2f(170 * 1.5, 245 * 1.5);
+	glVertex2f(170 * 1.5, 265 * 1.5);
+
+	glVertex2f(170 * 1.5, 265 * 1.5);
+	glVertex2f(190 * 1.5, 265 * 1.5);
+
+	glVertex2f(190 * 1.5, 265 * 1.5);
+	glVertex2f(190 * 1.5, 245 * 1.5);
+
+	glVertex2f(170 * 1.5, 265 * 1.5);
+	glVertex2f(190 * 1.5, 285 * 1.5);
+
+	glVertex2f(170 * 1.5, 265 * 1.5);
+	glVertex2f(170 * 1.5, 285 * 1.5);
+
+	//U 나타내기
+	glVertex2f(200 * 1.5, 245 * 1.5);
+	glVertex2f(200 * 1.5, 285 * 1.5);
+
+	glVertex2f(200 * 1.5, 285 * 1.5);
+	glVertex2f(220 * 1.5, 285 * 1.5);
+
+	glVertex2f(220 * 1.5, 285 * 1.5);
+	glVertex2f(220 * 1.5, 245 * 1.5);
+
+	//L 나타내기
+	glVertex2f(230 * 1.5, 245 * 1.5);
+	glVertex2f(230 * 1.5, 285 * 1.5);
+
+	glVertex2f(250 * 1.5, 285 * 1.5);
+	glVertex2f(230 * 1.5, 285 * 1.5);
+
+	//E 나타내기
+	glVertex2f(260 * 1.5, 245 * 1.5);
+	glVertex2f(280 * 1.5, 245 * 1.5);
+
+	glVertex2f(260 * 1.5, 245 * 1.5);
+	glVertex2f(260 * 1.5, 285 * 1.5);
+
+	glVertex2f(260 * 1.5, 265 * 1.5);
+	glVertex2f(280 * 1.5, 265 * 1.5);
+
+	glVertex2f(260 * 1.5, 285 * 1.5);
+	glVertex2f(280 * 1.5, 285 * 1.5);
+	glEnd();
+}
+
+void Triangle(int x, int y, int r)
+{
+
+	glBegin(GL_POLYGON);
+	glVertex2f(x, y + r + size);
+	glVertex2f(x + r*cos(330 * PI / 180) - size, y + r*sin(330 * PI / 180) - size);
+	glVertex2f(x + r*cos(210 * PI / 180) + size, y + r*sin(210 * PI / 180) - size);
+	glEnd();
+}
+
+/*
+말 모양 ■를 그림
+*/
+void Rectangular(int x, int y, int r)
+{
+	glBegin(GL_POLYGON);
+	glVertex2f(x + r, y + r);
+	glVertex2f(x - r, y + r);
+	glVertex2f(x - r, y - r);
+	glVertex2f(x + r, y - r);
+	glEnd();
+}
 
 void Intialize()//초기화 값 지정. (플레이어 턴을 1로 한 후 보드판 배열을 전부 0으로 초기화)
 {
@@ -62,42 +290,64 @@ void OnKeyPress(unsigned char key, int x, int y)//게임 오버 시 키보드 버튼 지정.
 
 void OnMouseClick(int button, int state, int x, int y)//게임시작 후 마우스 버튼 지정.
 {
-	if (over == false && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN || state == GLUT_UP)// 오른쪽 버튼 시 동작
+	if (stage == 1)
 	{
-		if (turn == 1)//플레이어1 차례일때
+		//START버튼을 누르면 게임 화면으로 넘어감
+		if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x>10 && x<290 * 1.5 && y>20 && y<160 * 1.5)
 		{
-			if (board[(y - 50) / 50][x / 50] == 0)// 1칸에 100을 차지하고 50은 위의 글자부분을 커버함.만일 클릭한 그 칸의 배열이 0이면 플레이어 1일때 그 클릭한 칸에 해당하는 배열을 1로둠
-			{
-				board[(y - 50) / 50][x / 50] = 1;
-				turn = 2;//그 후 플레이어를 다음 턴으로 넘김
-			}
+			stage = 3;
+			glutPostRedisplay();
 		}
-		else if (turn == 2)
+		else if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x>10 && x< 140 * 1.5 && y>190 * 1.5 && y<340 * 1.5)
 		{
-			if (board[(y - 50) / 50][x / 50] == 0)
-			{
-				board[(y - 50) / 50][x / 50] = 2;
-				turn = 1;
-			}
+			stage = 4;
+			glutPostRedisplay();
 		}
-		for (int i = 0; i < 9; i++)
+		else if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN && x>160 * 1.5 && x< 290 * 1.5 && y>190 * 1.5 && y<340 * 1.5)
 		{
-			printf("\n");
-			for (int j = 0; j < 9; j++)
-			{
-				printf("board[%d][%d]=%d  ", i, j, board[i][j]);
-			}
+			stage = 5;
+			glutPostRedisplay();
 		}
+	}
+	if (stage == 3)
+	{
+		if (over == false && button == GLUT_LEFT_BUTTON && state == GLUT_DOWN || state == GLUT_UP)// 오른쪽 버튼 시 동작
+		{
+			if (turn == 1)//플레이어1 차례일때
+			{
+				if (board[(y - 50) / 50][x / 50] == 0)// 1칸에 100을 차지하고 50은 위의 글자부분을 커버함.만일 클릭한 그 칸의 배열이 0이면 플레이어 1일때 그 클릭한 칸에 해당하는 배열을 1로둠
+				{
+					board[(y - 50) / 50][x / 50] = 1;
+					turn = 2;//그 후 플레이어를 다음 턴으로 넘김
+				}
+			}
+			else if (turn == 2)
+			{
+				if (board[(y - 50) / 50][x / 50] == 0)
+				{
+					board[(y - 50) / 50][x / 50] = 2;
+					turn = 1;
+				}
+			}
+			for (int i = 0; i < 9; i++)
+			{
+				printf("\n");
+				for (int j = 0; j < 9; j++)
+				{
+					printf("board[%d][%d]=%d  ", i, j, board[i][j]);
+				}
+			}
 
-		for (int i = 0; i < 3; i++)
-		{
-			printf("\n");
-			for (int j = 0; j < 3; j++)
+			for (int i = 0; i < 3; i++)
 			{
-				printf("bigboard[%d][%d]=%d  ", i, j, bigboard[i][j]);
+				printf("\n");
+				for (int j = 0; j < 3; j++)
+				{
+					printf("bigboard[%d][%d]=%d  ", i, j, bigboard[i][j]);
+				}
 			}
-		}
 
+		}
 	}
 }
 
@@ -142,18 +392,7 @@ void DrawLines()//칸을 나누는 선
 	glEnd();
 }
 
-void DrawCircle(float cx, float cy, float r, int num_segments)//동그라미 그리기
-{
-	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < num_segments; i++)//원점을 중심으로 num_segments의 수만큼 원의 테두리에 점을 찍어 선으로 연결한다.
-	{
-		float theta = 2.0f * 3.1415926f * float(i) / float(num_segments);//get the current angle 
-		float x = r * cosf(theta);//calculate the x component 
-		float y = r * sinf(theta);//calculate the y component 
-		glVertex2f(x + cx, y + cy);//output vertex 
-	}
-	glEnd();
-}
+
 
 void DrawXO()//보드판 배열 중 배열 값이 1 혹은 2일 시 판에 말을 그리도록 함.
 {
@@ -163,21 +402,50 @@ void DrawXO()//보드판 배열 중 배열 값이 1 혹은 2일 시 판에 말을 그리도록 함.
 		{
 			if (board[i][j] == 1)
 			{
-				glBegin(GL_LINES);
-				glVertex2f(25 + j * 50 - 12, 75 + i * 50 - 12);
-				glVertex2f(25 + j * 50 + 12, 75 + i * 50 + 12);
-				glVertex2f(25 + j * 50 - 12, 75 + i * 50 + 12);
-				glVertex2f(25 + j * 50 + 12, 75 + i * 50 - 12);
-				glEnd();
+
+				if (kind1 == 1)
+				{
+					Triangle(25 + j * 50, 75 + i * 50, 15);
+				}
+				else if (kind1 == 2)
+				{
+					Rectangular(25 + j * 50, 75 + i * 50, 15);
+				}
+				else if (kind1 == 3)
+				{
+					DrawCross(25 + j * 50, 75 + i * 50);
+				}
+				else if (kind1 == 4)
+				{
+					DrawCircle(25 + j * 50, 75 + i * 50, 15, 10);
+				}
+
 			}
 			else if (board[i][j] == 2)
 			{
 
-				DrawCircle(25 + j * 50, 75 + i * 50, 12, 15);
+				if (kind2 == 1)
+				{
+					Triangle(25 + j * 50, 75 + i * 50, 15);
+				}
+				else if (kind2 == 2)
+				{
+					Rectangular(25 + j * 50, 75 + i * 50, 15);
+				}
+				else if (kind2 == 3)
+				{
+					DrawCross(25 + j * 50, 75 + i * 50);
+				}
+				else if (kind2 == 4)
+				{
+					DrawCircle(25 + j * 50, 75 + i * 50, 15, 10);
+				}
+
 			}
 		}
 	}
 }
+
 
 void CheckWinner(int a, int b)//수직 수평 대각선의 배열값을 검사함.
 {
@@ -432,37 +700,45 @@ void checkgameover()
 void Display()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
-	glClearColor(1, 1, 1, 1);
 	glColor3f(0, 0, 0);
+	if (stage == 1)
+	{
 
+		glClearColor(0.7, 0.4, 0.7, 1);
+		Select(0, 0, 0);
+		Rule(0, 0);
+		StartButton();
+	}
 
+	if (stage == 3)
+	{
+		shadeboard();
+		DrawLines();//칸을 나누는 선 그리기 함수
+		DrawXO();//말을 그리는 함수
+		explain();
 
-	shadeboard();
-	DrawLines();//칸을 나누는 선 그리기 함수
-	DrawXO();//말을 그리는 함수
-	explain();
+		checkgameover();
 
-	checkgameover();
-
-
+	}
 	glutSwapBuffers();
 }
 
 void idle()
 {
+	if (stage == 3)
+	{
+		CheckWinner(0, 0);//포문 안돌리고 하는게 더 좋은 코딩
+		CheckWinner(0, 1);
+		CheckWinner(0, 2);
+		CheckWinner(1, 0);
+		CheckWinner(1, 1);
+		CheckWinner(1, 2);
+		CheckWinner(2, 0);
+		CheckWinner(2, 1);
+		CheckWinner(2, 2);
 
-	CheckWinner(0, 0);//포문 안돌리고 하는게 더 좋은 코딩
-	CheckWinner(0, 1);
-	CheckWinner(0, 2);
-	CheckWinner(1, 0);
-	CheckWinner(1, 1);
-	CheckWinner(1, 2);
-	CheckWinner(2, 0);
-	CheckWinner(2, 1);
-	CheckWinner(2, 2);
-
-	takescore();
-
+		takescore();
+	}
 	glutPostRedisplay();
 }
 
